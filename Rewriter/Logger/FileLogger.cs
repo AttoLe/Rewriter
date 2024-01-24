@@ -1,8 +1,9 @@
-﻿namespace Rewriter.Logger;
+﻿using Rewriter.Configuration;
 
-public class FileLogger(string name, Func<FileLoggerOption> getCurrentConfig) : ILogger
+namespace Rewriter.Logger;
+
+public class FileLogger(string name, Func<FileLoggerOptions> getCurrentConfig) : ILogger
 {
-
     private Func<ILogger, string, IDisposable?> scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull

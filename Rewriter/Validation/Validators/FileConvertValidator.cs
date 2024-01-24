@@ -3,7 +3,7 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Validation.Validators;
 
-public class FileConvertValidator : AbstractValidator<FileConvertConfig>
+public class FileConvertValidator : AbstractValidator<FileConvertOptions>
 {
     public FileConvertValidator()
     {

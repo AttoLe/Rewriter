@@ -10,7 +10,7 @@ builder.Services.AddHostedService<Worker>();
 builder.Logging.ClearProviders();
 builder.Configuration.AddJsonFile("appsettings.json");
 
-builder.Services.AddFluentValidationOptions<FileConvertConfig>(FileConvertConfig.Key);
+builder.Services.AddFluentValidationOptions<FileConvertOptions>(FileConvertOptions.Key);
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 try

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Configuration;
+using Rewriter.Configuration;
 
 namespace Rewriter.Logger;
 
@@ -13,12 +14,12 @@ public static class FileLoggerExtensions
             ServiceDescriptor.Singleton<ILoggerProvider, FileLoggerProvider>());
 
         LoggerProviderOptions.RegisterProviderOptions
-            <FileLoggerOption, FileLoggerProvider>(builder.Services);
+            <FileLoggerOptions, FileLoggerProvider>(builder.Services);
 
         return builder;
     }
 
-    public static ILoggingBuilder AddFileLog(this ILoggingBuilder builder, Action<FileLoggerOption> configure)
+    public static ILoggingBuilder AddFileLog(this ILoggingBuilder builder, Action<FileLoggerOptions> configure)
     {
         if (configure is null)
             throw new NullReferenceException();
