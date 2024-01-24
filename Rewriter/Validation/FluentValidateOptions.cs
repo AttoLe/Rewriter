@@ -29,8 +29,8 @@ public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, s
 
         var type = options.GetType().Name;
         var errors = result.Errors.Select(item =>
-            $"Validation failed for {type}.{item.PropertyName} with the error: {item.ErrorMessage}");
-        
+            $"Fluent validation failed for {type}.{item.PropertyName} with the error: {item.ErrorMessage}");
+  
         return ValidateOptionsResult.Fail(errors);
     }
 }

@@ -6,14 +6,20 @@ using Rewriter.Extensions;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddHostedService<Worker>();
+
 builder.Logging.ClearProviders();
-
 builder.Configuration.AddJsonFile("appsettings.json");
-builder.Services.AddOptions<FileConvertConfig>()
-    .BindConfiguration(FileConvertConfig.Key)
-    .ValidateFluentValidation().ValidateOnStart();
 
+builder.Services.AddFluentValidationOptions<FileConvertConfig>(FileConvertConfig.Key);
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-var host = builder.Build();
-host.Run();
+try
+{
+    var host = builder.Build();
+    host.Run();
+}
+catch (Exception e)
+{
+    Console.WriteLine(e);
+    throw;
+}
