@@ -2,7 +2,9 @@
 
 public class FileLoggerOptions
 {
-    public string FolderPath { get; set; } = string.Empty;
+    public const string Key = "Logging";
+    
+    public string FolderPath { get; set; }
+    public bool UseSeparateFiles { get; set; }
     public LogLevel MinimaLogLevel { get; set; } = LogLevel.Information;
-
 }
