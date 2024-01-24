@@ -11,6 +11,8 @@ builder.Logging.ClearProviders();
 builder.Configuration.AddJsonFile("appsettings.json");
 
 builder.Services.AddFluentValidationOptions<FileConvertOptions>(FileConvertOptions.Key);
+builder.Services.AddFluentValidationOptions<FileLoggerOptions>(FileLoggerOptions.Key);
+
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 try
