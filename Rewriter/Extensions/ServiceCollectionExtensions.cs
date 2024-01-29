@@ -6,7 +6,7 @@ public static class ServiceCollectionExtensions
         string sectionName) where TOptions : class
     {
         serviceCollection.AddOptions<TOptions>()
-            .BindConfiguration(sectionName)
+            .BindConfiguration(sectionName).ValidateDataAnnotations()
             .ValidateFluentValidation().ValidateOnStart();
 
         return serviceCollection;

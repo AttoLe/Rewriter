@@ -1,6 +1,6 @@
 ﻿namespace Rewriter.Configuration;
 
-public class FileConvertOptions
+public sealed class FileConvertOptions
 {
     public const string Key = "FileConversion";
     
