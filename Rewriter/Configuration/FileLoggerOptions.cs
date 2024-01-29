@@ -1,6 +1,6 @@
 ﻿namespace Rewriter.Configuration;
 
-public class FileLoggerOptions
+public sealed class FileLoggerOptions
 {
     public const string Key = "Logging";
     

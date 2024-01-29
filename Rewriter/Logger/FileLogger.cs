@@ -1,10 +1,20 @@
-﻿using Rewriter.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Rewriter.Configuration;
 
 namespace Rewriter.Logger;
 
-public class FileLogger(string name, Func<FileLoggerOptions> getCurrentConfig) : ILogger
+public class FileLogger: ILogger   
 {
-    private Func<ILogger, string, IDisposable?> scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
+    private Func<ILogger, string, IDisposable?> _scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
+    private FileLoggerOptions _options;
+    private readonly string _name;
+
+    public FileLogger(string name, IOptionsMonitor<FileLoggerOptions> optionsMonitor)
+    {
+        _options = optionsMonitor.CurrentValue;
+        optionsMonitor.OnChange(updatedValue => _options = updatedValue);
+        _name = name;
+    }
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
@@ -13,7 +23,8 @@ public class FileLogger(string name, Func<FileLoggerOptions> getCurrentConfig) :
             throw new ArgumentNullException(nameof(state));
         }
 
-        return scope(this, "");
+        return _scope(this, _name);
+        //TODO change it??
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -23,13 +34,14 @@ public class FileLogger(string name, Func<FileLoggerOptions> getCurrentConfig) :
             return;
         }
 
-        var option = getCurrentConfig();
-
-        throw new NotImplementedException();
+        //_options.FolderPath
+        
+        Console.WriteLine($"LOG {formatter(state, exception)}");
+        //throw new NotImplementedException();
 
         //TODO write it
     }
 
     public bool IsEnabled(LogLevel logLevel) =>
-        logLevel >= getCurrentConfig().MinimaLogLevel;
+        logLevel >= _options.MinimaLogLevel;
 }
