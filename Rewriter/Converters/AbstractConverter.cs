@@ -3,7 +3,7 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Converters;
 
-public abstract class AbstractConverter : IObserver<string>
+public abstract class AbstractConverter : IObserver<FileSystemEventArgs>
 {
     protected FileOutputOptions Options;
 
@@ -28,8 +28,8 @@ public abstract class AbstractConverter : IObserver<string>
         throw new NotImplementedException();
     }
 
-    public void OnNext(string value)
+    public void OnNext(FileSystemEventArgs value)
     {
-        ConvertFile(value);
+        ConvertFile(value.FullPath);
     }
 }
