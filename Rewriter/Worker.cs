@@ -1,41 +1,47 @@
 ﻿using Microsoft.Extensions.Options;
 using Rewriter.Configuration;
+using Rewriter.Converters;
 using Rewriter.FileWatchers;
-using Rewriter.Workers;
 
 namespace Rewriter;
 
-public class Worker<TConverter> : BackgroundService where TConverter : IConverter
+public class Worker : BackgroundService
 {
+    private readonly ConverterFactory _converterFactory;
+    private readonly FileWatcherFactory _fileWatcherFactory;
     private FileInputOptions _inputOptions;
-    private ILogger<TConverter> _logger;
-    private FileWatcherProvider _fileWatcherProvider;
-    private TConverter _converter;
-    public Worker(
-        IOptionsMonitor<FileInputOptions> fileInputOptionsMonitor,
-        ILogger<TConverter> logger,
-        FileWatcherProvider fileWatcherProvider,
-        TConverter converter
-    )
+
+    public Worker(IOptionsMonitor<FileInputOptions> inputOptionsMonitor, FileWatcherFactory fileWatcherFactory, ConverterFactory converterFactory)
     {
-        _logger = logger;
-        _fileWatcherProvider = fileWatcherProvider;
-        _converter = converter;
-        _inputOptions = fileInputOptionsMonitor.CurrentValue;
-        fileInputOptionsMonitor.OnChange(options => _inputOptions = options);
+        _inputOptions = inputOptionsMonitor.CurrentValue;
+        inputOptionsMonitor.OnChange(options =>
+        {
+            _inputOptions = options;
+            Execute();
+        });
+
+        _fileWatcherFactory = fileWatcherFactory;
+        _converterFactory = converterFactory;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            foreach (var inputFolderPath in _inputOptions.FolderPaths)
-            {
-                //logger
-                _fileWatcherProvider.AddWatcher(inputFolderPath, _inputOptions.Extensions, _converter.ConvertFile);
-            }
-        }
-
+        Execute();
         return Task.CompletedTask;
+    }
+
+    private void Execute()
+    {
+        foreach (var path in _inputOptions.FolderPaths)
+        {
+            if(!_fileWatcherFactory.TryGetWatcher(path, out var watcher, _inputOptions.Extensions))
+                continue;
+                    
+            foreach (var extension in _inputOptions.Extensions)
+            {
+                if (_converterFactory.TryGetConverter(extension, out var converter))
+                    watcher.Subscribe(converter);
+            }
+        }     
     }
 }

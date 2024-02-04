@@ -1,7 +1,8 @@
 using FluentValidation;
 using Rewriter.Configuration;
+using Rewriter.Converters;
 using Rewriter.Extensions;
-using Rewriter.Workers;
+using Rewriter.FileWatchers;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -12,16 +13,15 @@ builder.Services.AddFluentValidationOptions<FileOutputOptions>(FileOutputOptions
 builder.Services.AddFluentValidationOptions<FileLoggerOptions>(FileLoggerOptions.Key);
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
+builder.Services.AddSingleton<FileWatcherFactory>();
+builder.Services.AddSingleton<ConverterFactory>();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddFileLog();
-builder.Services.AddConverterServices(builder.Configuration);
 
 try
 {
     var host = builder.Build();
-    Console.WriteLine(host.Services.GetServices<BackgroundService>().Count());
-    Console.WriteLine(host.Services.GetServices<IConverter>().Count());
-   
     host.Run();
 }
 catch (Exception e)
