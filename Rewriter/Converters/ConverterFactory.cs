@@ -6,7 +6,7 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Converters;
 
-public class ConverterFactory(IServiceProvider serviceProvider)
+public class ConverterFactory(IServiceProvider serviceProvider) : IDisposable
 {
     private readonly Dictionary<Type, AbstractConverter> _converters = [];
 
@@ -54,5 +54,10 @@ public class ConverterFactory(IServiceProvider serviceProvider)
                 t.GetCustomAttribute<ExtensionAttribute>() is { Extensions: { } extensions } &&
                 extensions.Contains(extension)
             );
+    }
+
+    public void Dispose()
+    {
+        _converters.Clear();
     }
 }
