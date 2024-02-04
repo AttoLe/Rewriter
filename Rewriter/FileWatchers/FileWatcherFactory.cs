@@ -42,6 +42,19 @@ public class FileWatcherFactory(ILogger<FileWatcherFactory> logger) : IDisposabl
         return watcher;
     }
 
+
+    public void OutOfRangeWatchersDispose(IEnumerable<string> paths)
+    {
+       var extraPaths = _watchers.Keys.Where(path => !paths.Contains(path)).ToList();
+       extraPaths.ForEach(path =>
+       {
+           _watchers[path].EnableRaisingEvents = false;
+           _watchers[path].Dispose();
+           
+           _watchers.Remove(path);
+       });
+    }
+    
     public void Dispose()
     {
         foreach (var (_,  watcher) in _watchers)
