@@ -1,35 +1,55 @@
 ﻿namespace Rewriter.FileWatchers;
 
-public class FileWatcher : IDisposable
+public class FileWatcher : FileSystemWatcher, IObservable<string>
 {
-    private readonly FileSystemWatcher _watcher;
-    private readonly Action<string> _convertAction;
-
-    public FileWatcher(string folderPath, IEnumerable<string> filters, Action<string> convert)
+    private readonly HashSet<IObserver<string>> _converters = [];
+    
+    public FileWatcher(string path, IEnumerable<string>? filters = null)
     {
-        _convertAction = convert;
+        Path = path;
+        NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
+        EnableRaisingEvents = true;
 
-        _watcher = new FileSystemWatcher
-        {
-            Path = folderPath,
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
-            EnableRaisingEvents = true
-        };
-
+        if (filters is null) return;
+        
         foreach (var filter in filters)
         {
-            _watcher.Filters.Add(filter);
+            Filters.Add(filter);
+        }
+    }
+    
+    public IDisposable Subscribe(IObserver<string> observer)
+    {
+        if (_converters.Add(observer))
+        {
+            Created += (_, args) =>
+            {
+                foreach (var converter in _converters)
+                {
+                    converter.OnNext(args.FullPath);
+                }
+            };
         }
 
-        _watcher.Created += OnFileCreated;
+        return new Unsubscriber<string>(_converters, observer);
     }
+}
 
-    private void OnFileCreated(object sender, FileSystemEventArgs e) => _convertAction(e.FullPath);
 
-    public void Dispose()
-    {
-        _watcher.EnableRaisingEvents = false;
-        _watcher.Created -= OnFileCreated;
-        _watcher.Dispose();
-    }
+//TODO check this and probably rewrite
+//The ArrivalsMonitor class includes the Subscribe and Unsubscribe methods.
+//The Subscribe method enables the class to save the IDisposable implementation returned by the call to
+//Subscribe to a private variable. The Unsubscribe method enables the class to unsubscribe from notifications
+//by calling the provider's Dispose implementation.
+
+internal sealed class Unsubscriber<T> : IDisposable
+{
+    private readonly ISet<IObserver<T>> _observers;
+    private readonly IObserver<T> _observer;
+
+    internal Unsubscriber(
+        ISet<IObserver<T>> observers,
+        IObserver<T> observer) => (_observers, _observer) = (observers, observer);
+
+    public void Dispose() => _observers.Remove(_observer);
 }
