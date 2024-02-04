@@ -11,6 +11,7 @@ public class Worker : BackgroundService
     private readonly FileWatcherFactory _fileWatcherFactory;
     private FileInputOptions _inputOptions;
 
+    private readonly List<IDisposable> _subscriptions = [];
     public Worker(IOptionsMonitor<FileInputOptions> inputOptionsMonitor, FileWatcherFactory fileWatcherFactory, ConverterFactory converterFactory)
     {
         _inputOptions = inputOptionsMonitor.CurrentValue;
@@ -32,6 +33,9 @@ public class Worker : BackgroundService
 
     private void Execute()
     {
+        DisposeSubscriptions();
+        _fileWatcherFactory.OutOfRangeWatchersDispose(_inputOptions.Extensions);
+        
         foreach (var path in _inputOptions.FolderPaths)
         {
             if(!_fileWatcherFactory.TryGetWatcher(path, out var watcher, _inputOptions.Extensions))
@@ -39,9 +43,22 @@ public class Worker : BackgroundService
                     
             foreach (var extension in _inputOptions.Extensions)
             {
-                if (_converterFactory.TryGetConverter(extension, out var converter))
-                    watcher.Subscribe(converter);
+                if (!_converterFactory.TryGetConverter(extension, out var converter)) continue;
+                
+                var subscription = watcher.Subscribe(converter);
+                _subscriptions.Add(subscription);
             }
         }     
+    }
+
+    private void DisposeSubscriptions()
+    {
+        _subscriptions.ForEach(sub => sub.Dispose());
+        _subscriptions.Clear();
+    }
+    
+    public override void Dispose()
+    {
+        DisposeSubscriptions();
     }
 }
