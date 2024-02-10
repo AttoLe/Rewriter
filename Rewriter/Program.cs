@@ -1,4 +1,5 @@
 using FluentValidation;
+using Rewriter;
 using Rewriter.Configuration;
 using Rewriter.Converters;
 using Rewriter.Extensions;
@@ -15,6 +16,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddSingleton<FileWatcherFactory>();
 builder.Services.AddSingleton<ConverterFactory>();
+builder.Services.AddHostedService<Worker>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddFileLog();
