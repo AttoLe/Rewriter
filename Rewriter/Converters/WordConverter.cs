@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Options;
+using Microsoft.Office.Core;
 using Rewriter.Attributes;
 using Rewriter.Configuration;
+using Rewriter.Extensions;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace Rewriter.Converters;
@@ -9,19 +11,39 @@ namespace Rewriter.Converters;
 public class WordConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<WordConverter> logger)
     : AbstractConverter(optionsMonitor)
 {
-    //[LoggerMessage(0, LogLevel.Information, "Writing hello world response to {dat}")]
-    //partial void LogHelloWorld(ILogger logger, string dat);
 
+    private static Word.Application _application = new()
+    {
+        Visible = false,
+        FileValidation = MsoFileValidationMode.msoFileValidationSkip
+    };
+    
     protected override void ConvertFile(string fullPath)
     {
-        var app = new Word.Application
-        {
-            Visible = true,
-        };
+        var document = _application.Documents.Open(FileName: fullPath, Visible: false);
+        logger.LogFileConverting(fullPath);
         
-        //logger
-
-        var document = app.Documents.Open(fullPath);
         document.SaveAs(FileName: ConvertPath(fullPath, Options.FolderPath), FileFormat: Word.WdSaveFormat.wdFormatPDF);
+        
+        document.Close();
+        File.Delete(fullPath);
+        
+        logger.LogFileConverted(fullPath);
+    }
+
+    public override void OnCompleted()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void OnError(Exception error)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public override void Dispose()
+    {
+        _application.Quit();
     }
 }
