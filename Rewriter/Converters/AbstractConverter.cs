@@ -3,7 +3,7 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Converters;
 
-public abstract class AbstractConverter : IObserver<FileSystemEventArgs>
+public abstract class AbstractConverter : IObserver<FileSystemEventArgs>, IDisposable
 {
     protected FileOutputOptions Options;
 
@@ -15,21 +15,17 @@ public abstract class AbstractConverter : IObserver<FileSystemEventArgs>
 
     protected abstract void ConvertFile(string fullPath);
 
-    protected static string ConvertPath(string fullOldPath, string newFolderPath) =>
-        newFolderPath + "/" + Path.ChangeExtension(Path.GetFileName(fullOldPath), ".pdf");
+    protected static string ConvertPath(string fullOldPath, string newFullFolderPath) =>
+        newFullFolderPath + "\\" + Path.ChangeExtension(Path.GetFileName(fullOldPath), ".pdf");
+
+    public abstract void OnCompleted();
+
+    public abstract void OnError(Exception error);
     
-    public void OnCompleted()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void OnError(Exception error)
-    {
-        throw new NotImplementedException();
-    }
-
     public void OnNext(FileSystemEventArgs value)
     {
         ConvertFile(value.FullPath);
     }
+
+    public abstract void Dispose();
 }
