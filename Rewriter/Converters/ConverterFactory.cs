@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.Options;
-using Rewriter.Attributes;
-using Rewriter.Configuration;
+using Rewriter.Extensions;
 
 namespace Rewriter.Converters;
 
-public class ConverterFactory(IServiceProvider serviceProvider) : IDisposable
+public class ConverterFactory(IServiceProvider serviceProvider, ILogger<ConverterFactory> logger) : IDisposable
 {
     private readonly Dictionary<Type, AbstractConverter> _converters = [];
 
@@ -14,7 +12,7 @@ public class ConverterFactory(IServiceProvider serviceProvider) : IDisposable
     {
         if (!TryGetConverterType(extension, out var type))
         {
-            //logger
+            logger.LogNoConverterError(extension);
             converter = null;
             return false;
         }
@@ -22,18 +20,20 @@ public class ConverterFactory(IServiceProvider serviceProvider) : IDisposable
         if (_converters.TryGetValue(type, out var existedConverter))
         {
             converter = existedConverter;
+            
+            logger.LogAlreadyCreatedConverter(extension, type.ToString());
             return true;
         }
         
         converter = CreateNewConverter(type);
+        logger.LogNewConverterCreated(extension, type.ToString());
+        
         return true;
     }
 
     private AbstractConverter CreateNewConverter(Type type)
     {
-        var logger = serviceProvider.GetRequiredService(typeof(ILogger<>).MakeGenericType(type));
-        var options = serviceProvider.GetRequiredService<IOptionsMonitor<FileOutputOptions>>();
-        var newConverter = (AbstractConverter) ActivatorUtilities.CreateInstance(serviceProvider, type, options, logger);
+        var newConverter = (AbstractConverter) ActivatorUtilities.CreateInstance(serviceProvider, type);
         _converters.Add(type, newConverter);
 
         return newConverter;
@@ -41,19 +41,13 @@ public class ConverterFactory(IServiceProvider serviceProvider) : IDisposable
     
     private static bool TryGetConverterType(string extension,  [MaybeNullWhen(false)] out Type type)
     {
-        type = TryFindConverterType(extension);
-        return type is not null;
-    }
-
-    private static Type? TryFindConverterType(string extension)
-    {
-        return Assembly.GetExecutingAssembly()
+        type = Assembly.GetExecutingAssembly()
             .GetTypes()
             .Where(t => t.IsClass)
             .FirstOrDefault(t =>
-                t.GetCustomAttribute<ExtensionAttribute>() is { Extensions: { } extensions } &&
-                extensions.Contains(extension)
-            );
+                t.IsRightExtensionConverter(extension));
+        
+        return type is not null;
     }
 
     public void Dispose()
