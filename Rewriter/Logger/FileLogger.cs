@@ -3,7 +3,7 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Logger;
 
-public class FileLogger: ILogger   
+public class FileLogger: ILogger
 {
     private Func<ILogger, string, IDisposable?> _scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
     private FileLoggerOptions _options;
@@ -22,23 +22,19 @@ public class FileLogger: ILogger
         {
             throw new ArgumentNullException(nameof(state));
         }
-
+        
         return _scope(this, _name);
+        
         //TODO change it??
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (!IsEnabled(logLevel))
+        if (IsEnabled(logLevel))
         {
-            return;
+            Console.WriteLine($"{logLevel} -- {formatter(state, exception)}");
         }
-
-        //_options.FolderPath
-        
-        Console.WriteLine($"LOG {formatter(state, exception)}");
-        //throw new NotImplementedException();
-
+        //_name is category
         //TODO write it
     }
 

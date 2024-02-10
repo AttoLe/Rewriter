@@ -1,19 +1,16 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Rewriter.Extensions;
 
 namespace Rewriter.FileWatchers;
 
-public class FileWatcherFactory(ILogger<FileWatcherFactory> logger) : IDisposable
+public class FileWatcherFactory(IServiceProvider serviceProvider, ILogger<FileWatcherFactory> logger) : IDisposable
 {
     private readonly Dictionary<string, FileWatcher> _watchers = [];
 
-    public bool TryGetWatcher(string inputFolderPath,  [MaybeNullWhen(false)] out FileWatcher watcher, IEnumerable<string>? filters = null)
+    public FileWatcher TryGetWatcher(string inputFolderPath, IEnumerable<string>? filters = null)
     {
         if (!_watchers.TryGetValue(inputFolderPath, out var existedWatcher))
         {
-            var result = CreateNewWatcher(inputFolderPath, filters);
-            watcher = result;
-            
-            return result is null;
+            return CreateNewWatcher(inputFolderPath, filters);
         }
 
         if (!Equals(existedWatcher.Filters, filters))
@@ -25,20 +22,16 @@ public class FileWatcherFactory(ILogger<FileWatcherFactory> logger) : IDisposabl
             }
         }
         
-        watcher = existedWatcher;
-        return true;
+        logger.LogAlreadyCreatedWatcher(inputFolderPath);
+        return existedWatcher;
     }
 
-    private FileWatcher? CreateNewWatcher(string path, IEnumerable<string>? filters = null)
+    private FileWatcher CreateNewWatcher(string path, IEnumerable<string>? filters = null)
     {
-        if (!Directory.Exists(path))
-        {
-            //logger
-            return null;
-        }
-
-        var watcher = new FileWatcher(path, filters);
+        var watcher = ActivatorUtilities.CreateInstance<FileWatcher>(serviceProvider, path, filters ?? Array.Empty<string>());
         _watchers.Add(path, watcher);
+        
+        logger.LogNewWatcherCreated(path);
         return watcher;
     }
 
@@ -46,12 +39,14 @@ public class FileWatcherFactory(ILogger<FileWatcherFactory> logger) : IDisposabl
     public void OutOfRangeWatchersDispose(IEnumerable<string> paths)
     {
        var extraPaths = _watchers.Keys.Where(path => !paths.Contains(path)).ToList();
+       
        extraPaths.ForEach(path =>
        {
            _watchers[path].EnableRaisingEvents = false;
            _watchers[path].Dispose();
            
            _watchers.Remove(path);
+           logger.LogExtraWatcherDisposed(path);
        });
     }
     
