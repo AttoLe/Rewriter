@@ -34,12 +34,11 @@ public class Worker : BackgroundService
     private void Execute()
     {
         DisposeSubscriptions();
-        _fileWatcherFactory.OutOfRangeWatchersDispose(_inputOptions.Extensions);
+        _fileWatcherFactory.OutOfRangeWatchersDispose(_inputOptions.FolderPaths);
         
         foreach (var path in _inputOptions.FolderPaths)
         {
-            if(!_fileWatcherFactory.TryGetWatcher(path, out var watcher, _inputOptions.Extensions))
-                continue;
+            var watcher = _fileWatcherFactory.TryGetWatcher(path, _inputOptions.Extensions);
                     
             foreach (var extension in _inputOptions.Extensions)
             {
@@ -48,7 +47,9 @@ public class Worker : BackgroundService
                 var subscription = watcher.Subscribe(converter);
                 _subscriptions.Add(subscription);
             }
-        }     
+        }
+
+        Console.WriteLine("\n");
     }
 
     private void DisposeSubscriptions()
