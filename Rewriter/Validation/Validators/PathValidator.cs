@@ -10,6 +10,6 @@ public class PathValidator : AbstractValidator<string>
             .NotNull()
             .NotEmpty()
             .Must(Directory.Exists)
-            .WithMessage("path do not exists");
+            .WithMessage("Required path do not exists");
     }
 }
