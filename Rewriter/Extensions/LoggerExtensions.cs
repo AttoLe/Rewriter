@@ -1,6 +1,6 @@
 ﻿namespace Rewriter.Extensions;
 
-static partial class LoggerExtensions
+public static partial class LoggerExtensions
 {
     [LoggerMessage(0, LogLevel.Information, "New subscription is created. {listener} subscriber for {source} on {path}")]
     public static partial void LogNewSubscription(this ILogger logger, string listener, string source, string path);
@@ -14,6 +14,9 @@ static partial class LoggerExtensions
     
     [LoggerMessage(0, LogLevel.Information, "File watcher for {path} is already created")]
     public static partial void LogAlreadyCreatedWatcher(this ILogger logger, string path);
+        
+    [LoggerMessage(0, LogLevel.Information, "File watcher for {path} has its extensions changed")]
+    public static partial void LogWatcherExtensionsChanged(this ILogger logger, string path);
     
     [LoggerMessage(0, LogLevel.Information, "File watcher for {path} is disposed")]
     public static partial void LogExtraWatcherDisposed(this ILogger logger, string path);
@@ -25,7 +28,7 @@ static partial class LoggerExtensions
     [LoggerMessage(0, LogLevel.Information, "New converter for {extension} is created ({converterTypeName})")]
     public static partial void LogNewConverterCreated(this ILogger logger, string extension, string converterTypeName);
     
-    [LoggerMessage(0, LogLevel.Information, "File watcher for {extension} is already created ({converterTypeName})")]
+    [LoggerMessage(0, LogLevel.Information, "Converter for {extension} is already created ({converterTypeName})")]
     public static partial void LogAlreadyCreatedConverter(this ILogger logger, string extension, string converterTypeName);
     
     
@@ -34,13 +37,4 @@ static partial class LoggerExtensions
     
     [LoggerMessage(0, LogLevel.Information, "File from {path} path is successfully converted)")]
     public static partial void LogFileConverted(this ILogger logger, string path);
-    
-    
- 
-
-    public static void LogConfigurationChanged(this ILogger logger, string configurationName)
-    {
-        logger.LogInformation($"Configuration '{configurationName}' changed.");
-    }
-
 }
