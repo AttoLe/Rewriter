@@ -6,29 +6,33 @@ public class FileWatcherFactory(IServiceProvider serviceProvider, ILogger<FileWa
 {
     private readonly Dictionary<string, FileWatcher> _watchers = [];
 
-    public FileWatcher TryGetWatcher(string inputFolderPath, IEnumerable<string>? filters = null)
+    public FileWatcher GetWatcher(string inputFolderPath, IEnumerable<string>? extensions = null)
     {
+        var filters = extensions is null ? [] : extensions.Select(ext => "*" + ext).ToList();
+        
         if (!_watchers.TryGetValue(inputFolderPath, out var existedWatcher))
         {
             return CreateNewWatcher(inputFolderPath, filters);
         }
 
-        if (!Equals(existedWatcher.Filters, filters))
+        if (!existedWatcher.Filters.SequenceEqual(filters))
         {
             existedWatcher.Filters.Clear();
-            foreach (var filter in filters ?? Enumerable.Empty<string>())
+            foreach (var filter in filters)
             {
                 existedWatcher.Filters.Add(filter);
             }
+
+            logger.LogWatcherExtensionsChanged(inputFolderPath);
         }
-        
+
         logger.LogAlreadyCreatedWatcher(inputFolderPath);
         return existedWatcher;
     }
 
-    private FileWatcher CreateNewWatcher(string path, IEnumerable<string>? filters = null)
+    private FileWatcher CreateNewWatcher(string path, IEnumerable<string> filters)
     {
-        var watcher = ActivatorUtilities.CreateInstance<FileWatcher>(serviceProvider, path, filters ?? Array.Empty<string>());
+        var watcher = ActivatorUtilities.CreateInstance<FileWatcher>(serviceProvider, path, filters);
         _watchers.Add(path, watcher);
         
         logger.LogNewWatcherCreated(path);
@@ -36,9 +40,9 @@ public class FileWatcherFactory(IServiceProvider serviceProvider, ILogger<FileWa
     }
 
 
-    public void OutOfRangeWatchersDispose(IEnumerable<string> paths)
+    public void ExtraWatchersDispose()
     {
-       var extraPaths = _watchers.Keys.Where(path => !paths.Contains(path)).ToList();
+       var extraPaths = _watchers.Where(pair => !pair.Value.IsActive()).Select(pair => pair.Key).ToList();
        
        extraPaths.ForEach(path =>
        {
