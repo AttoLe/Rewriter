@@ -3,16 +3,17 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Logger;
 
-public class FileLogger: ILogger
+public class FileLogger: ILogger, IDisposable
 {
-    private Func<ILogger, string, IDisposable?> _scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
+    private readonly Func<ILogger, string, IDisposable?> _scope = LoggerMessage.DefineScope<string>("Scope {scopeName}");
     private FileLoggerOptions _options;
     private readonly string _name;
+    private readonly IDisposable? _optionChange;
 
     public FileLogger(string name, IOptionsMonitor<FileLoggerOptions> optionsMonitor)
     {
         _options = optionsMonitor.CurrentValue;
-        optionsMonitor.OnChange(updatedValue => _options = updatedValue);
+        _optionChange = optionsMonitor.OnChange(updatedValue => _options = updatedValue);
         _name = name;
     }
 
@@ -40,4 +41,9 @@ public class FileLogger: ILogger
 
     public bool IsEnabled(LogLevel logLevel) =>
         logLevel >= _options.MinimaLogLevel;
+
+    public void Dispose()
+    {
+        _optionChange?.Dispose();
+    }
 }
