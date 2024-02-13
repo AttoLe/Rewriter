@@ -1,25 +1,10 @@
-using FluentValidation;
-using Rewriter;
-using Rewriter.Configuration;
-using Rewriter.Converters;
 using Rewriter.Extensions;
-using Rewriter.FileWatchers;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.json");
-
-builder.Services.AddFluentValidationOptions<FileInputOptions>(FileInputOptions.Key);
-builder.Services.AddFluentValidationOptions<FileOutputOptions>(FileOutputOptions.Key);
-builder.Services.AddFluentValidationOptions<FileLoggerOptions>(FileLoggerOptions.Key);
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-
-builder.Services.AddSingleton<FileWatcherFactory>();
-builder.Services.AddSingleton<ConverterFactory>();
-builder.Services.AddHostedService<Worker>();
-
-builder.Logging.ClearProviders();
-builder.Logging.AddFileLog();
+builder.AddValidatedConfiguration();
+builder.AddWorkerComponent();
+builder.AddFileLogging();
 
 try
 {
