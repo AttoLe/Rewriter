@@ -3,9 +3,9 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Validation.Validators;
 
-public class FileLoggerValidator : AbstractValidator<FileLoggerOptions>
+public class FileLoggerOptionValidator : AbstractValidator<FileLoggerOptions>
 {
-    public FileLoggerValidator()
+    public FileLoggerOptionValidator()
     {
         RuleFor(loggerConfig => loggerConfig.FolderPath).SetValidator(new PathValidator());
     }
