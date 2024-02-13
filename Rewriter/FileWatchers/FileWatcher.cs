@@ -18,7 +18,7 @@ public class FileWatcher : FileSystemWatcher, IObservable<FileSystemEventArgs>
         if (filters is null) return;
         foreach (var filter in filters)
         {
-            Filters.Add('*' + filter);
+            Filters.Add(filter);
         }
 
         Created += OnCreated;
@@ -34,6 +34,11 @@ public class FileWatcher : FileSystemWatcher, IObservable<FileSystemEventArgs>
 
         _logger.LogAlreadySubscribed(observer.GetType().ToString(), this.GetType().ToString(), Path);
         return Unsubscriber.NullUnsubscriber;
+    }
+
+    public bool IsActive()
+    {
+        return _converters.Count > 0;
     }
     
     private void OnCreated(object sender, FileSystemEventArgs e)
