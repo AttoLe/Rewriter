@@ -1,12 +1,10 @@
 ﻿using FluentValidation;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 
 namespace Rewriter.Validation;
 
 public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, string? name)
-    : IValidateOptions<TOptions>
-    where TOptions : class
+    : IValidateOptions<TOptions> where TOptions : class
 {
     public ValidateOptionsResult Validate(string? inputName, TOptions options)
     {
@@ -40,7 +38,7 @@ public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, s
         }
         
         Console.WriteLine("Fluent validation for {0} failed", typeof(TOptions));
-        result.Errors.ForEach(error => Console.WriteLine("Fluent validation failed " + error));
+        result.Errors.ForEach(Console.WriteLine);
         
         return ValidateOptionsResult.Fail(errors);
     }
