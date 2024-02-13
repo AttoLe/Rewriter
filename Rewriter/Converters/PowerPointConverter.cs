@@ -8,8 +8,9 @@ using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 namespace Rewriter.Converters;
 
 [Extension(".ppa", ".ppt", ".pptm" , ".pptx")]
-public class PowerPointConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<PowerPointConverter> logger)
-    : AbstractConverter(optionsMonitor)
+public class PowerPointConverter
+    (IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<PowerPointConverter> logger)
+    : AbstractConverter
 {
     private PowerPoint.Application _application = new()
     {
@@ -21,7 +22,7 @@ public class PowerPointConverter(IOptionsMonitor<FileOutputOptions> optionsMonit
         var document = _application.Presentations.Open(fullPath, 0, 0, 0);
         logger.LogFileConverting(fullPath);
        
-        document.SaveAs(FileName: ConvertPath(fullPath, Options.FolderPath), 
+        document.SaveAs(FileName: ConvertPath(fullPath, optionsMonitor.CurrentValue.FolderPath), 
             FileFormat: PowerPoint.PpSaveAsFileType.ppSaveAsPDF);
         
         document.Close();

@@ -8,8 +8,9 @@ using Word = Microsoft.Office.Interop.Word;
 namespace Rewriter.Converters;
 
 [Extension(".doc", ".docm", ".docx" , ".htm", ".html")]
-public class WordConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<WordConverter> logger)
-    : AbstractConverter(optionsMonitor)
+public class WordConverter
+    (IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<WordConverter> logger)
+    : AbstractConverter
 {
 
     private static Word.Application _application = new()
@@ -23,7 +24,7 @@ public class WordConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor, IL
         var document = _application.Documents.Open(FileName: fullPath, Visible: false);
         logger.LogFileConverting(fullPath);
         
-        document.SaveAs(FileName: ConvertPath(fullPath, Options.FolderPath), FileFormat: Word.WdSaveFormat.wdFormatPDF);
+        document.SaveAs(FileName: ConvertPath(fullPath, optionsMonitor.CurrentValue.FolderPath), FileFormat: Word.WdSaveFormat.wdFormatPDF);
         
         document.Close();
         File.Delete(fullPath);
@@ -40,7 +41,6 @@ public class WordConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor, IL
     {
         throw new NotImplementedException();
     }
-
 
     public override void Dispose()
     {
