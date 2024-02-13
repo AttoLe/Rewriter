@@ -3,16 +3,11 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Converters;
 
-public abstract class AbstractConverter : IObserver<FileSystemEventArgs>, IDisposable
+public abstract class AbstractConverter(IOptions<FileOutputOptions> options)
+    : IObserver<FileSystemEventArgs>, IDisposable
 {
-    protected FileOutputOptions Options;
-
-    protected AbstractConverter(IOptionsMonitor<FileOutputOptions> optionsMonitor)
-    {
-        Options = optionsMonitor.CurrentValue;
-        optionsMonitor.OnChange(option => Options = option);
-    }
-
+    protected readonly FileOutputOptions Options = options.Value;
+    
     protected abstract void ConvertFile(string fullPath);
 
     protected static string ConvertPath(string fullOldPath, string newFullFolderPath) =>
