@@ -10,13 +10,20 @@ public class Worker : BackgroundService
     private readonly ConverterFactory _converterFactory;
     private readonly FileWatcherFactory _fileWatcherFactory;
     private FileInputOptions _inputOptions;
-
     private readonly List<IDisposable> _subscriptions = [];
-    public Worker(IOptionsMonitor<FileInputOptions> inputOptionsMonitor, FileWatcherFactory fileWatcherFactory, ConverterFactory converterFactory)
+    private readonly IDisposable? _optionsChange;
+    
+    public Worker(IOptionsMonitor<FileInputOptions> inputOptionsMonitor, FileWatcherFactory fileWatcherFactory,
+        ConverterFactory converterFactory)
     {
         _inputOptions = inputOptionsMonitor.CurrentValue;
-        inputOptionsMonitor.OnChange(options =>
+        
+        _optionsChange = inputOptionsMonitor.OnChange(options =>
         {
+            //check to secure from OnChange incorrect multiple times invoking
+            if (options.Equals(_inputOptions))
+                return;
+            
             _inputOptions = options;
             Execute();
         });
@@ -34,22 +41,25 @@ public class Worker : BackgroundService
     private void Execute()
     {
         DisposeSubscriptions();
-        _fileWatcherFactory.OutOfRangeWatchersDispose(_inputOptions.FolderPaths);
         
-        foreach (var path in _inputOptions.FolderPaths)
+        foreach (var option in _inputOptions.FileInputList)
         {
-            var watcher = _fileWatcherFactory.TryGetWatcher(path, _inputOptions.Extensions);
-                    
-            foreach (var extension in _inputOptions.Extensions)
+            foreach (var path in option.FolderPaths)
             {
-                if (!_converterFactory.TryGetConverter(extension, out var converter)) continue;
+                var watcher = _fileWatcherFactory.GetWatcher(path, option.Extensions);
+                    
+                foreach (var extension in option.Extensions)
+                {
+                    if (!_converterFactory.TryGetConverter(extension, out var converter))
+                        continue;
                 
-                var subscription = watcher.Subscribe(converter);
-                _subscriptions.Add(subscription);
+                    var subscription = watcher.Subscribe(converter);
+                    _subscriptions.Add(subscription);
+                }
             }
         }
-
-        Console.WriteLine("\n");
+        
+        _fileWatcherFactory.ExtraWatchersDispose();
     }
 
     private void DisposeSubscriptions()
@@ -61,5 +71,8 @@ public class Worker : BackgroundService
     public override void Dispose()
     {
         DisposeSubscriptions();
+        _fileWatcherFactory.Dispose();
+        _converterFactory.Dispose();
+        _optionsChange?.Dispose();
     }
 }
