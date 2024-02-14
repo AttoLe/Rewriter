@@ -21,12 +21,12 @@ public class ConverterFactory(IServiceProvider serviceProvider, ILogger<Converte
         {
             converter = existedConverter;
             
-            logger.LogAlreadyCreatedConverter(extension, type.ToString());
+            logger.LogAlreadyCreatedConverter(extension, type.Name);
             return true;
         }
         
         converter = CreateNewConverter(type);
-        logger.LogNewConverterCreated(extension, type.ToString());
+        logger.LogNewConverterCreated(extension, type.Name);
         
         return true;
     }

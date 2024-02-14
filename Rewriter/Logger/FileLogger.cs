@@ -31,10 +31,7 @@ public class FileLogger: ILogger, IDisposable
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (IsEnabled(logLevel))
-        {
-            Console.WriteLine($"{logLevel} -- {formatter(state, exception)}");
-        }
+        Console.WriteLine($"{logLevel} -- {formatter(state, exception)}");
         //_name is category
         //TODO write it
     }

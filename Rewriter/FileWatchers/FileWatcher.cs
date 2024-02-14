@@ -28,11 +28,11 @@ public class FileWatcher : FileSystemWatcher, IObservable<FileSystemEventArgs>
     {
         if (_converters.Add(observer))
         {
-            _logger.LogNewSubscription(observer.GetType().ToString(), this.GetType().ToString(), Path);
-            return new Unsubscriber<FileSystemEventArgs>(_converters, observer);
+            _logger.LogNewSubscription(observer.GetType().Name, GetType().Name, Path);
+            return new Unsubscriber<FileSystemEventArgs>(_converters, observer, _logger, this, Path);
         }
 
-        _logger.LogAlreadySubscribed(observer.GetType().ToString(), this.GetType().ToString(), Path);
+        _logger.LogAlreadySubscribed(observer.GetType().Name, GetType().Name, Path);
         return Unsubscriber.NullUnsubscriber;
     }
 
