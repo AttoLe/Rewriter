@@ -3,9 +3,9 @@ using Rewriter.Configuration;
 
 namespace Rewriter.Validation.Validators;
 
-public class FileOutputValidator : AbstractValidator<FileOutputOptions>
+public class FileOutputOptionValidator : AbstractValidator<FileOutputOptions>
 {
-    public FileOutputValidator()
+    public FileOutputOptionValidator()
     {
         RuleFor(fileOutputOptions => fileOutputOptions.FolderPath).SetValidator(new PathValidator());
     }
