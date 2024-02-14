@@ -1,10 +1,12 @@
-﻿namespace Rewriter.FileWatchers;
+﻿using Rewriter.Extensions;
 
-public class Unsubscriber<T>(ICollection<IObserver<T>> observers, IObserver<T> observer) : Unsubscriber
+namespace Rewriter.FileWatchers;
+
+public class Unsubscriber<T>(ICollection<IObserver<T>> observers, IObserver<T> observer, ILogger logger, IObservable<T> source, string path) : Unsubscriber
 {
     public override void Dispose()
     {
-        Console.WriteLine("subscription disposed");
+        logger.LogUnsubrcribed(observer.GetType().Name, source.GetType().Name, path);
         observers.Remove(observer);
     }
 }

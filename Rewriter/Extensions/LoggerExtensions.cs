@@ -7,6 +7,10 @@ public static partial class LoggerExtensions
     
     [LoggerMessage(0, LogLevel.Information, "{listener} is already subscribed for {source} on {path}")]
     public static partial void LogAlreadySubscribed(this ILogger logger, string listener, string source, string path);
+
+    [LoggerMessage(0, LogLevel.Information, "{subscriber} unsubscribed from {source} on {path}")]
+    public static partial void LogUnsubrcribed(this ILogger logger, string subscriber,string source, string path);
+    
     
     
     [LoggerMessage(0, LogLevel.Information, "New file watcher is created for {path}")]
