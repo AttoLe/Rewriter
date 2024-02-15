@@ -9,8 +9,7 @@ public static partial class LoggerExtensions
     public static partial void LogAlreadySubscribed(this ILogger logger, string listener, string source, string path);
 
     [LoggerMessage(0, LogLevel.Information, "{subscriber} unsubscribed from {source} on {path}")]
-    public static partial void LogUnsubrcribed(this ILogger logger, string subscriber,string source, string path);
-    
+    public static partial void LogUnsubscribed(this ILogger logger, string subscriber,string source, string path);
     
     
     [LoggerMessage(0, LogLevel.Information, "New file watcher is created for {path}")]
@@ -36,9 +35,16 @@ public static partial class LoggerExtensions
     public static partial void LogAlreadyCreatedConverter(this ILogger logger, string extension, string converterTypeName);
     
     
-    [LoggerMessage(0, LogLevel.Information, "File from {path} path is converting)")]
+    [LoggerMessage(0, LogLevel.Information, "File from {path} path is converting")]
     public static partial void LogFileConverting(this ILogger logger, string path);
     
-    [LoggerMessage(0, LogLevel.Information, "File from {path} path is successfully converted)")]
+    [LoggerMessage(0, LogLevel.Information, "File from {path} path is successfully converted")]
     public static partial void LogFileConverted(this ILogger logger, string path);
+    
+    
+    [LoggerMessage(0, LogLevel.Information, "File from {path} path is successfully deleted")]
+    public static partial void LogFileDeleted(this ILogger logger, string path);
+    
+    [LoggerMessage(0, LogLevel.Error, "File from {path} path is not deleted. Error - {error}")]
+    public static partial void LogFileDeletionError(this ILogger logger, string path, string error);
 }
