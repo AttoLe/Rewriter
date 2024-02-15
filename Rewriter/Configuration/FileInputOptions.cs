@@ -6,6 +6,8 @@ public class FileInputOptions : IEquatable<FileInputOptions>
     
     public IEnumerable<FileInputOption> FileInputList { get; set; }
 
+    public bool DeleteOldFile { get; set; }
+    
     public bool Equals(FileInputOptions? other)
     {
         return other is not null 
