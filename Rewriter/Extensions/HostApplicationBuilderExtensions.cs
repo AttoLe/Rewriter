@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Rewriter.Configuration;
 using Rewriter.Converters;
+using Rewriter.FileDeleter;
 using Rewriter.FileWatchers;
 using Rewriter.Validation;
 
@@ -28,6 +29,7 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddSingleton<FileWatcherFactory>();
         builder.Services.AddSingleton<ConverterFactory>();
         builder.Services.AddHostedService<Worker>();
+        builder.Services.AddSingleton<IFileDeleter, FileDeleter.FileDeleter>();
 
         return builder;
     }
