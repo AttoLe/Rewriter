@@ -38,18 +38,17 @@ public class FileLogger: ILogger, IDisposable
     {
         //no isEnable check cause it is done before log invocation on LoggerExtensions
         //method though compile-time logging source generator  
-
         File.AppendAllLines(_path, new []{$"{logLevel} -- {DateTime.Now} -- {formatter(state, exception)}"});
     }
 
     public bool IsEnabled(LogLevel logLevel) =>
-        logLevel >= _options.MinimaLogLevel;
+        logLevel >= _options.LogLevel.FileLogger;
 
     private string CalcPath()
     {
         return _options.UseSeparateFiles 
-            ? Path.Combine(_options.FolderPath, _name + ".txt") 
-            : Path.Combine(_options.FolderPath, "log.txt");
+            ? Path.Combine(_options.FolderPath, _name + ".log") 
+            : Path.Combine(_options.FolderPath, "log.log");
     }
     
     public void Dispose()
