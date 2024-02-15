@@ -13,8 +13,9 @@ public static class HostApplicationBuilderExtensions
     public static HostApplicationBuilder AddValidatedConfiguration(this HostApplicationBuilder builder)
     {
         builder.Configuration.Sources.Clear();
-        builder.Configuration.AddJsonFile("appsettings.json", false, true);
-
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        builder.Configuration.AddJsonFile($"appsettings.{environment}.json", false, true);
+        
         builder.AddFluentValidationOptions<FileInputOptions>(FileInputOptions.Key);
         builder.AddFluentValidationOptions<FileOutputOptions>(FileOutputOptions.Key);
         builder.AddFluentValidationOptions<FileLoggerOptions>(FileLoggerOptions.Key);
@@ -47,9 +48,10 @@ public static class HostApplicationBuilderExtensions
     {
         builder.Services.Configure<TOptions>(builder.Configuration.GetSection(sectionName));
         
-        builder.Services.AddSingleton<IValidateOptions<TOptions>>(serviceProvider => 
+
+        builder.Services.AddSingleton<IValidateOptions<TOptions>>(serviceProvider =>
             new FluentValidateOptions<TOptions>(serviceProvider, string.Empty));
-        
+
         return builder;
     }
 }
