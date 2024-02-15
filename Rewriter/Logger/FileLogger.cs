@@ -9,12 +9,19 @@ public class FileLogger: ILogger, IDisposable
     private FileLoggerOptions _options;
     private readonly string _name;
     private readonly IDisposable? _optionChange;
-
+    private string _path;
+    
     public FileLogger(string name, IOptionsMonitor<FileLoggerOptions> optionsMonitor)
     {
         _options = optionsMonitor.CurrentValue;
-        _optionChange = optionsMonitor.OnChange(updatedValue => _options = updatedValue);
         _name = name;
+        _path = CalcPath();
+        
+        _optionChange = optionsMonitor.OnChange(updatedValue =>
+        {
+            _options = updatedValue;
+            _path = CalcPath();
+        });
     }
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
@@ -25,20 +32,26 @@ public class FileLogger: ILogger, IDisposable
         }
         
         return _scope(this, _name);
-        
-        //TODO change it??
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        Console.WriteLine($"{logLevel} -- {formatter(state, exception)}");
-        //_name is category
-        //TODO write it
+        //no isEnable check cause it is done before log invocation on LoggerExtensions
+        //method though compile-time logging source generator  
+
+        File.AppendAllLines(_path, new []{$"{logLevel} -- {DateTime.Now} -- {formatter(state, exception)}"});
     }
 
     public bool IsEnabled(LogLevel logLevel) =>
         logLevel >= _options.MinimaLogLevel;
 
+    private string CalcPath()
+    {
+        return _options.UseSeparateFiles 
+            ? Path.Combine(_options.FolderPath, _name + ".txt") 
+            : Path.Combine(_options.FolderPath, "log.txt");
+    }
+    
     public void Dispose()
     {
         _optionChange?.Dispose();
