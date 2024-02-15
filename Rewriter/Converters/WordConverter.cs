@@ -3,16 +3,16 @@ using Microsoft.Office.Core;
 using Rewriter.Attributes;
 using Rewriter.Configuration;
 using Rewriter.Extensions;
+using Rewriter.FileDeleter;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace Rewriter.Converters;
 
 [Extension(".doc", ".docm", ".docx" , ".htm", ".html")]
 public class WordConverter
-    (IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<WordConverter> logger)
+    (IOptionsMonitor<FileOutputOptions> optionsMonitor, IFileDeleter fileDeleter, ILogger<WordConverter> logger)
     : AbstractConverter
 {
-
     private static Word.Application _application = new()
     {
         Visible = false,
@@ -27,9 +27,9 @@ public class WordConverter
         document.SaveAs(FileName: ConvertPath(fullPath, optionsMonitor.CurrentValue.FolderPath), FileFormat: Word.WdSaveFormat.wdFormatPDF);
         
         document.Close();
-        File.Delete(fullPath);
-        
         logger.LogFileConverted(fullPath);
+
+        fileDeleter.TryDeleteFile(fullPath);
     }
 
     public override void OnCompleted()

@@ -3,13 +3,14 @@ using Microsoft.Office.Core;
 using Rewriter.Attributes;
 using Rewriter.Configuration;
 using Rewriter.Extensions;
+using Rewriter.FileDeleter;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
 namespace Rewriter.Converters;
 
 [Extension(".ppa", ".ppt", ".pptm" , ".pptx")]
 public class PowerPointConverter
-    (IOptionsMonitor<FileOutputOptions> optionsMonitor, ILogger<PowerPointConverter> logger)
+    (IOptionsMonitor<FileOutputOptions> optionsMonitor, IFileDeleter fileDeleter, ILogger<WordConverter> logger)
     : AbstractConverter
 {
     private PowerPoint.Application _application = new()
@@ -26,9 +27,10 @@ public class PowerPointConverter
             FileFormat: PowerPoint.PpSaveAsFileType.ppSaveAsPDF);
         
         document.Close();
-        File.Delete(fullPath);
-                
+        
         logger.LogFileConverted(fullPath);
+
+        fileDeleter.TryDeleteFile(fullPath);
     }
 
     public override void OnCompleted()
