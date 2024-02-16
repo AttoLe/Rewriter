@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Diagnostics;
+using System.Reflection;
+using FluentValidation;
 using Microsoft.Extensions.Options;
 using Rewriter.Configuration;
 using Rewriter.Converters;
@@ -10,10 +12,21 @@ namespace Rewriter.Extensions;
 
 public static class HostApplicationBuilderExtensions
 {
+    public static HostApplicationBuilder AddWindowServiceInjection(this HostApplicationBuilder builder)
+    {
+        builder.Services.AddWindowsService(options =>
+        {
+            options.ServiceName = ".NET File Rewriter";
+        });
+        return builder;
+    }
+    
     public static HostApplicationBuilder AddValidatedConfiguration(this HostApplicationBuilder builder)
     {
         builder.Configuration.Sources.Clear();
+        
         var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        if (string.IsNullOrWhiteSpace(environment)) environment = "Production";
         builder.Configuration.AddJsonFile($"appsettings.{environment}.json", false, true);
         
         builder.AddFluentValidationOptions<FileInputOptions>(FileInputOptions.Key);
@@ -39,7 +52,16 @@ public static class HostApplicationBuilderExtensions
     {
         builder.Logging.ClearProviders(); 
         builder.Logging.AddFileLog();
-
+        
+        return builder;
+    }
+    
+    public static HostApplicationBuilder SetCurrentDirectory(this HostApplicationBuilder builder)
+    {
+        var directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        Enumerable.Range(0, 3).ToList().ForEach(_ => directory = Directory.GetParent(directory!)!.ToString());
+        
+        builder.Configuration.SetBasePath(directory!);
         return builder;
     }
     
@@ -47,7 +69,6 @@ public static class HostApplicationBuilderExtensions
         string sectionName) where TOptions : class
     {
         builder.Services.Configure<TOptions>(builder.Configuration.GetSection(sectionName));
-        
 
         builder.Services.AddSingleton<IValidateOptions<TOptions>>(serviceProvider =>
             new FluentValidateOptions<TOptions>(serviceProvider, string.Empty));
