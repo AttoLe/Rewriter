@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Console;
-
-namespace Rewriter.Configuration;
+﻿namespace Rewriter.Configuration;
 
 public sealed class FileLoggerOptions
 {
@@ -9,11 +7,10 @@ public sealed class FileLoggerOptions
     public string FolderPath { get; set; }
     public bool UseSeparateFiles { get; set; }
     
-    public LogLevelOptions LogLevel { get; set; }
+    public LogLevelOptions FileLogger { get; set; }
 }
 
 public class LogLevelOptions
 {
     public LogLevel Default { get; set; }
-    public LogLevel FileLogger { get; set; }
 }

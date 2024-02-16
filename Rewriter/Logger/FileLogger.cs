@@ -42,7 +42,7 @@ public class FileLogger: ILogger, IDisposable
     }
 
     public bool IsEnabled(LogLevel logLevel) =>
-        logLevel >= _options.LogLevel.FileLogger;
+        logLevel >= _options.FileLogger.Default;
 
     private string CalcPath()
     {
