@@ -10,27 +10,24 @@ namespace Rewriter.Converters;
 
 [Extension(".ppa", ".ppt", ".pptm" , ".pptx")]
 public class PowerPointConverter
-    (IOptionsMonitor<FileOutputOptions> optionsMonitor, IFileDeleter fileDeleter, ILogger<WordConverter> logger)
-    : AbstractConverter
+    (IOptionsMonitor<FileOutputOptions> optionsMonitor, IFileDeleter fileDeleter, ILogger<PowerPointConverter> logger)
+    : AbstractConverter(optionsMonitor, fileDeleter)
 {
     private PowerPoint.Application _application = new()
     {
         FileValidation = MsoFileValidationMode.msoFileValidationSkip,
     };
-    
+
     protected override void ConvertFile(string fullPath)
     {
         var document = _application.Presentations.Open(fullPath, 0, 0, 0);
         logger.LogFileConverting(fullPath);
        
-        document.SaveAs(FileName: ConvertPath(fullPath, optionsMonitor.CurrentValue.FolderPath), 
+        document.SaveAs(FileName: ConvertToNewPath(fullPath), 
             FileFormat: PowerPoint.PpSaveAsFileType.ppSaveAsPDF);
         
         document.Close();
-        
         logger.LogFileConverted(fullPath);
-
-        fileDeleter.TryDeleteFile(fullPath);
     }
 
     public override void OnCompleted()
