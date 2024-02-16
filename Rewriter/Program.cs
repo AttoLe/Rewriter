@@ -2,9 +2,11 @@ using Rewriter.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.AddValidatedConfiguration();
-builder.AddWorkerComponent();
-builder.AddFileLogging();
+builder.SetCurrentDirectory()
+    .AddWindowServiceInjection()
+    .AddValidatedConfiguration()
+    .AddWorkerComponent()
+    .AddFileLogging();
 
 try
 {
