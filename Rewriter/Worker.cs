@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Rewriter.Configuration;
 using Rewriter.Converters;
+using Rewriter.Extensions;
 using Rewriter.FileWatchers;
 
 namespace Rewriter;
@@ -11,10 +12,11 @@ public class Worker : BackgroundService
     private readonly FileWatcherFactory _fileWatcherFactory;
     private FileInputOptions _inputOptions;
     private readonly List<IDisposable> _subscriptions = [];
+    private readonly ILogger<Worker> _logger;
     private readonly IDisposable? _optionsChange;
     
     public Worker(IOptionsMonitor<FileInputOptions> inputOptionsMonitor, FileWatcherFactory fileWatcherFactory,
-        ConverterFactory converterFactory)
+        ConverterFactory converterFactory, ILogger<Worker> logger)
     {
         _inputOptions = inputOptionsMonitor.CurrentValue;
         
@@ -30,11 +32,21 @@ public class Worker : BackgroundService
 
         _fileWatcherFactory = fileWatcherFactory;
         _converterFactory = converterFactory;
+        _logger = logger;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Execute();
+        try
+        {
+            Execute();
+        }
+        catch (Exception e)
+        {
+            _logger.LogCrashError(e.Message);
+            Environment.Exit(1);
+        }
+
         return Task.CompletedTask;
     }
 
