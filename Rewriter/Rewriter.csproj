@@ -10,6 +10,7 @@
     <ItemGroup>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
         <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
         <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
         <PackageReference Include="ThammimTech.Microsoft.Office.Core" Version="15.0.0" />

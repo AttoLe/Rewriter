@@ -6,7 +6,6 @@ namespace Rewriter.FileDeleter;
 
 public class FileDeleter(IOptionsMonitor<FileInputOptions> monitor, ILogger<FileDeleter> logger) : IFileDeleter
 {
-    
     public bool TryDeleteFile(string path)
     {
         if (!monitor.CurrentValue.DeleteOldFile)
