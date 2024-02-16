@@ -47,4 +47,8 @@ public static partial class LoggerExtensions
     
     [LoggerMessage(0, LogLevel.Error, "File from {path} path is not deleted. Error - {error}")]
     public static partial void LogFileDeletionError(this ILogger logger, string path, string error);
+    
+    
+    [LoggerMessage(0, LogLevel.Error, "Service crashed due to error - {error}")]
+    public static partial void LogCrashError(this ILogger logger, string error);
 }
