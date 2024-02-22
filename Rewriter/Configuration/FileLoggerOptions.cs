@@ -6,5 +6,11 @@ public sealed class FileLoggerOptions
     
     public string FolderPath { get; set; }
     public bool UseSeparateFiles { get; set; }
-    public LogLevel MinimaLogLevel { get; set; } = LogLevel.Information;
+    
+    public LogLevelOptions FileLogger { get; set; }
+}
+
+public class LogLevelOptions
+{
+    public LogLevel Default { get; set; }
 }
