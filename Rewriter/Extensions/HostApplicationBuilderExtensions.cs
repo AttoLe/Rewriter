@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.InteropServices;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 using Rewriter.Configuration;
@@ -33,7 +34,6 @@ public static class HostApplicationBuilderExtensions
         builder.AddFluentValidationOptions<FileLoggerOptions>(FileLoggerOptions.Key);
 
         builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-        
         return builder;
     }
     
@@ -52,13 +52,21 @@ public static class HostApplicationBuilderExtensions
         builder.Logging.ClearProviders(); 
         builder.Logging.AddFileLog();
         
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return builder;
+        
+        builder.Logging.AddEventLog(x =>
+        {
+            x.Filter = (s, level) => s == "Validation" && level >= LogLevel.Information;
+        });
+        
+        builder.Logging.AddFilter("Validation", _ => false);
+        
         return builder;
     }
     
     public static HostApplicationBuilder SetCurrentDirectory(this HostApplicationBuilder builder)
     {
         var directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        Enumerable.Range(0, 3).ToList().ForEach(_ => directory = Directory.GetParent(directory!)!.ToString());
         
         builder.Configuration.SetBasePath(directory!);
         return builder;
@@ -70,8 +78,11 @@ public static class HostApplicationBuilderExtensions
         builder.Services.Configure<TOptions>(builder.Configuration.GetSection(sectionName));
 
         builder.Services.AddSingleton<IValidateOptions<TOptions>>(serviceProvider =>
-            new FluentValidateOptions<TOptions>(serviceProvider, string.Empty));
-
+        {
+            var logger = serviceProvider.GetService<ILoggerProvider>()?.CreateLogger("Validation");
+            return new FluentValidateOptions<TOptions>(logger, serviceProvider, string.Empty);
+        });
+        
         return builder;
     }
 }

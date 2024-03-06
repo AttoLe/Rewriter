@@ -1,9 +1,10 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Options;
+using Rewriter.Extensions;
 
 namespace Rewriter.Validation;
 
-public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, string? name)
+public class FluentValidateOptions<TOptions>(ILogger? logger, IServiceProvider serviceProvider, string? name)
     : IValidateOptions<TOptions> where TOptions : class
 {
     public ValidateOptionsResult Validate(string? inputName, TOptions options)
@@ -15,7 +16,8 @@ public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, s
 
         if (options is null)
         {
-            throw new ArgumentNullException(nameof(options), "is null");
+            logger?.LogNoOptionsError(typeof(TOptions).Name);
+            Environment.Exit(1);
         }
 
         using var scope = serviceProvider.CreateScope();
@@ -24,22 +26,16 @@ public class FluentValidateOptions<TOptions>(IServiceProvider serviceProvider, s
 
         if (result.IsValid)
         {
-            Console.WriteLine("Fluent validation for {0} success", typeof(TOptions));
+            logger?.LogSuccessOptionValidation(typeof(TOptions).Name);
             return ValidateOptionsResult.Success;
         }
 
         var type = options.GetType().Name;
-        var errors = result.Errors.Select(item =>
-            $"Fluent validation failed for {type}.{item.PropertyName} with the error: {item.ErrorMessage}").ToList();
-
-        if (errors.Count == 0)
-        {
-            return ValidateOptionsResult.Fail(errors);
-        }
+        result.Errors.ForEach(item =>
+            logger?.LogErrorOptionValidation(type, item.PropertyName, item.ErrorMessage));
         
-        Console.WriteLine("Fluent validation for {0} failed", typeof(TOptions));
-        result.Errors.ForEach(Console.WriteLine);
-        
-        return ValidateOptionsResult.Fail(errors);
+        Environment.Exit(1);
+        return ValidateOptionsResult.Fail(
+            result.Errors.Select(x => x.PropertyName + "\t" + x.ErrorMessage));
     }
 }
