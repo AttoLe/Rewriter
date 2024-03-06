@@ -15,6 +15,5 @@ try
 }
 catch (Exception e)
 {
-    Console.WriteLine(e);
-    throw;
+    Environment.Exit(1);
 }
