@@ -2,6 +2,23 @@
 
 public static partial class LoggerExtensions
 {
+    [LoggerMessage(0, LogLevel.Error, "Options is null - {name}")]
+    public static partial void LogNoOptionsError(this ILogger logger, string name);
+    
+    [LoggerMessage(0, LogLevel.Information, "Fluent validation for {name} success")]
+    public static partial void LogSuccessOptionValidation(this ILogger logger, string name);
+
+    [LoggerMessage(0, LogLevel.Error,   "Fluent validation failed for {type}.{prop} with the error: {error}")]
+    public static partial void LogErrorOptionValidation(this ILogger logger, string type, string prop, string error);
+    
+    
+    [LoggerMessage(0, LogLevel.Information, "Worker process successfully started")]
+    public static partial void LogStartApp(this ILogger logger);
+
+    [LoggerMessage(0, LogLevel.Information,   "Worker process successfully stopped")]
+    public static partial void LogStopApp(this ILogger logger);
+    
+    
     [LoggerMessage(0, LogLevel.Information, "New subscription is created. {listener} subscriber for {source} on {path}")]
     public static partial void LogNewSubscription(this ILogger logger, string listener, string source, string path);
     
